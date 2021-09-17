@@ -9,6 +9,8 @@ variable	seed		equal 2654868
 variable	cut_att		equal 1.00
 variable	cut_rep		equal 0.75
 variable	cut_rho		equal 0.75
+variable    	cut_dis 	equal 1.00
+variable    	pow_dis		equal 2.00
 variable	cut_phi		equal 1.00
 variable	skin		equal 0.3*${cut_att}
 
@@ -93,21 +95,21 @@ group           group_run    union group_slab45 group_fluids
 ############### specify bead-to-bead pair style and coefficients
 
 pair_style	mdpd/meso ${kBT} ${cut_att} ${seed} group_fluids group_solids
-pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	1 2 ${A_att_12} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	1 3 ${A_att_13} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	1 4 ${A_att_14} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	1 5 ${A_att_15} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	2 3 ${A_att_23} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	2 4 ${A_att_24} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	2 5 ${A_att_25} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	3 3 ${A_att_33} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	3 4 ${A_att_34} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	3 5 ${A_att_35} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	4 4 ${A_att_44} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	4 5 ${A_att_45} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-#pair_coeff	5 5 ${A_att_55} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
+pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+pair_coeff	1 2 ${A_att_12} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis} 
+pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	1 3 ${A_att_13} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	1 4 ${A_att_14} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	1 5 ${A_att_15} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	2 3 ${A_att_23} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	2 4 ${A_att_24} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	2 5 ${A_att_25} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	3 3 ${A_att_33} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	3 4 ${A_att_34} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	3 5 ${A_att_35} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	4 4 ${A_att_44} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	4 5 ${A_att_45} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+#pair_coeff	5 5 ${A_att_55} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
 
 ############### specify unit mass
 

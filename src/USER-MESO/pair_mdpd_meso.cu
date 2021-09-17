@@ -59,6 +59,8 @@ void MesoPairMDPD::allocate()
     memory->create( B_rep,   n + 1, n + 1, "pair:B_rep" );
     memory->create( gamma,   n + 1, n + 1, "pair:gamma" );
     memory->create( sigma,   n + 1, n + 1, "pair:sigma" );
+    memory->create( cut_dis, n + 1, n + 1, "pair:cut_dis" );
+    memory->create( pow_dis, n + 1, n + 1, "pair:pow_dis" );
 
     for( int i = 1; i <= n; i++ )
         for( int j = i; j <= n; j++ )
@@ -84,6 +86,8 @@ void MesoPairMDPD::prepare_coeff()
             coeff_table[ cid * n_coeff + p_B_rep ] = B_rep[i][j];
             coeff_table[ cid * n_coeff + p_gamma ] = gamma[i][j];
             coeff_table[ cid * n_coeff + p_sigma ] = sigma[i][j];
+            coeff_table[ cid * n_coeff + p_cut_dis ] = cut_dis[i][j];
+            coeff_table[ cid * n_coeff + p_pow_dis ] = pow_dis[i][j];
         }
     }
     dev_coefficients.upload( &coeff_table[0], coeff_table.size(), meso_device->stream() );
@@ -140,6 +144,7 @@ __global__ void gpu_mdpd(
                 r64 rsq      	= dx * dx + dy * dy + dz * dz;
                 r64 *coeff_ij 	= coeffs + ( coord1.i * n_type + coord2.i ) * n_coeff;
                 r64 cut      	= coeff_ij[p_cut];
+                r64 cut_dis     = coeff_ij[p_cut_dis];
 
                 // printf("%g %g %g %g %g %g\n",coeff_ij[p_cut],coeff_ij[p_cut_r],coeff_ij[p_gamma],coeff_ij[p_sigma],coeff_ij[p_A_att],coeff_ij[p_B_rep]);
 
@@ -155,7 +160,9 @@ __global__ void gpu_mdpd(
                     r64 dot      = dx * dvx + dy * dvy + dz * dvz;
                     r64 wc       = 1.0 - r / cut;
                     r64 wc_r     = MAX(1.0 - r / coeff_ij[p_cut_r] , 0.0) ;
-                    r64 wr       = wc;
+                    //r64 wr       = wc;
+                    //... cut-off range for dissipative force is a new parameter
+                    r64 wr       = 1.0 - r / cut_dis;
 
                     r64 rho_j    = tex1Dfetch<r64>( tex_rho, j );
                     r64 phi_j    = tex1Dfetch<r64>( tex_phi, j );
@@ -199,7 +206,9 @@ __global__ void gpu_mdpd(
 //                    printf("dissi %g \n",( gamma_ij * wr * wr * dot * rinv ));
 
                     if( evflag ) {
-                    	energy += 0.5 * A_att * coeff_ij[p_cut] * wr * wr + 0.5 * B_rep * coeff_ij[p_cut_r] * (rho_i + rho_j) * wc_r * wc_r;
+                    	//energy += 0.5 * A_att * coeff_ij[p_cut] * wr * wr + 0.5 * B_rep * coeff_ij[p_cut_r] * (rho_i + rho_j) * wc_r * wc_r;
+                        //... energy is calculated from conservertive force
+                    	energy += 0.5 * A_att * coeff_ij[p_cut] * wc * wc + 0.5 * B_rep * coeff_ij[p_cut_r] * (rho_i + rho_j) * wc_r * wc_r;
                     	vrxx += dx * dx * fpair;
                     	vryy += dy * dy * fpair;
                     	vrzz += dz * dz * fpair;
@@ -329,7 +338,8 @@ void MesoPairMDPD::settings( int narg, char **arg )
 
 void MesoPairMDPD::coeff( int narg, char **arg )
 {
-    if( narg != 7 ) error->all( FLERR, "Incorrect args for mdpd pair coefficients: \n itype jtype A B gamma cutA cutB" );
+    //if( narg != 7 ) error->all( FLERR, "Incorrect args for mdpd pair coefficients: \n itype jtype A B gamma cutA cutB" );
+    if( narg != 9 ) error->all( FLERR, "Incorrect args for mdpd pair coefficients: \n itype jtype A B gamma cutA cutB" );
     if( !allocated ) allocate();
 
     int iarg = 0;
@@ -339,9 +349,11 @@ void MesoPairMDPD::coeff( int narg, char **arg )
 
     double a0_one 		= atof( arg[iarg++] );
     double b0_one		= atof( arg[iarg++] );
-    double gamma_one 	= atof( arg[iarg++] );
+    double gamma_one  		= atof( arg[iarg++] );
     double cut_one 		= atof( arg[iarg++] );
     double cut_two 		= atof( arg[iarg++] );
+    double cut_three 		= atof( arg[iarg++] );
+    double pow_one 		= atof( arg[iarg++] );
 
     if( cut_one < cut_two ) error->all( FLERR, "Incorrect args for pair coefficients:\n cutA should be larger than cutB." );
 
@@ -353,6 +365,8 @@ void MesoPairMDPD::coeff( int narg, char **arg )
             gamma[i][j] 	= gamma_one;
             cut[i][j]   	= cut_one;
             cut_r[i][j] 	= cut_two;
+            cut_dis[i][j] 	= cut_three;
+            pow_dis[i][j] 	= pow_one;
             setflag[i][j]   = 1;
             count++;
         }
@@ -392,6 +406,8 @@ double MesoPairMDPD::init_one( int i, int j )
     B_rep[j][i]    	= B_rep[i][j];
     gamma[j][i]   	= gamma[i][j];
     sigma[j][i]		= sigma[i][j];
+    cut_dis[j][i]	= cut_dis[i][j];
+    pow_dis[j][i]	= pow_dis[i][j];
 
     return cut[i][j];
 }
@@ -413,6 +429,8 @@ void MesoPairMDPD::write_restart( FILE *fp )
                 fwrite( &gamma[i][j], sizeof( double ), 1, fp );
                 fwrite( &cut[i][j], sizeof( double ), 1, fp );
                 fwrite( &cut_r[i][j], sizeof( double ), 1, fp );
+                fwrite( &cut_dis[i][j], sizeof( double ), 1, fp );
+                fwrite( &pow_dis[i][j], sizeof( double ), 1, fp );
             }
         }
     }
@@ -442,12 +460,16 @@ void MesoPairMDPD::read_restart( FILE *fp )
                     fread( &gamma[i][j], sizeof( double ), 1, fp );
                     fread( &cut[i][j], sizeof( double ), 1, fp );
                     fread( &cut_r[i][j], sizeof( double ), 1, fp );
+                    fread( &cut_dis[i][j], sizeof( double ), 1, fp );
+                    fread( &pow_dis[i][j], sizeof( double ), 1, fp );
                 }
                 MPI_Bcast( &A_att[i][j], 1, MPI_DOUBLE, 0, world );
                 MPI_Bcast( &B_rep[i][j], 1, MPI_DOUBLE, 0, world );
                 MPI_Bcast( &gamma[i][j], 1, MPI_DOUBLE, 0, world );
                 MPI_Bcast( &cut[i][j], 1, MPI_DOUBLE, 0, world );
                 MPI_Bcast( &cut_r[i][j], 1, MPI_DOUBLE, 0, world );
+                MPI_Bcast( &cut_dis[i][j], 1, MPI_DOUBLE, 0, world );
+                MPI_Bcast( &pow_dis[i][j], 1, MPI_DOUBLE, 0, world );
             }
         }
     }
@@ -510,7 +532,7 @@ void MesoPairMDPD::read_data( FILE *fp )
 {
 	for (int i = 1; i <= atom->ntypes; i++)
 		for (int j = i; j <= atom->ntypes; j++)
-			fprintf(fp,"%d %d %g %g %g %g %g\n",i,j,A_att[i][j],B_rep[i][j],gamma[i][j],cut[i][j],cut_r[i][j]);
+			fprintf(fp,"%d %d %g %g %g %g %g %g %g\n",i,j,A_att[i][j],B_rep[i][j],gamma[i][j],cut[i][j],cut_r[i][j],cut_dis[i][j],pow_dis[i][j]);
 }
 
 

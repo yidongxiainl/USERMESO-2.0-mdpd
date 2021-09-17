@@ -16,6 +16,9 @@ variable	A_att_23	equal -20 # fluid1--fluid2
 variable	A_att_33	equal -40 # fluid2--fluid2
 variable	B_rep		equal 25
 variable	gamma		equal 18.0
+variable        cut_dis         equal 1.00
+variable        pow_dis         equal 2.00
+
 variable	mass_1		equal 1
 variable	mass_2		equal 1
 variable	mass_3		equal 1
@@ -52,10 +55,10 @@ group		group_fluids union group_fluid1
 
 ############### specify bead-to-bead pair style and coefficients
 pair_style	mdpd/meso 1.0 ${cut_att} 123456 group_fluids group_solids
-pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	1 2 ${A_att_12} 0 ${gamma} ${cut_att} ${cut_rep}
+pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+pair_coeff	1 2 ${A_att_12} 0 ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
 #pair_coeff	1 3 ${A_att_13} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
+pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
 #pair_coeff	2 3 ${A_att_23} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
 #pair_coeff	3 3 ${A_att_33} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
 

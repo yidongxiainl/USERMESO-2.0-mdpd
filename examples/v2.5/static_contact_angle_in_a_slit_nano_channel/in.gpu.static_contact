@@ -27,6 +27,9 @@ variable	A_att_12	equal -20 # fluid1--solid2
 variable	B_rep		equal 25
 variable	gamma		equal 18.0
 
+variable        cut_dis         equal 1.00
+variable        pow_dis         equal 2.00
+
 variable	type_fluid1	equal 1
 variable	type_solid2	equal 2
 
@@ -66,9 +69,9 @@ group		group_solid2 type ${type_solid2}
 
 pair_style      mdpd/meso ${kBT} ${cut_att} 123456 group_fluid1 group_solid2
 
-pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	1 2 ${A_att_12} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
-pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep}
+pair_coeff	1 1 ${A_att_11} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+pair_coeff	1 2 ${A_att_12} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
+pair_coeff	2 2 ${A_att_22} ${B_rep} ${gamma} ${cut_att} ${cut_rep} ${cut_dis} ${pow_dis}
 
 ############### specify unit mass
 

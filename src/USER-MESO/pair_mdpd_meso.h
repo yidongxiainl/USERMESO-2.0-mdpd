@@ -13,13 +13,15 @@ PairStyle(mdpd/meso,MesoPairMDPD)
 namespace LAMMPS_NS {
 
 namespace MDPD_COEFFICIENTS {
-const static int n_coeff  = 6;
+const static int n_coeff  = 8;
 const static int p_cut    = 0;
 const static int p_cut_r  = 1;
 const static int p_A_att  = 2;
 const static int p_B_rep  = 3;
 const static int p_gamma  = 4;
 const static int p_sigma  = 5;
+const static int p_cut_dis= 6;
+const static int p_pow_dis= 7;
 }
 
 class MesoPairMDPD : public Pair, protected MesoPointers {
@@ -52,6 +54,8 @@ protected:
     int 	 wall_group, wall_groupbit;
     double **cut;
     double **cut_r;
+    double **cut_dis; // extra parameter in dissipative force from original mDPD
+    double **pow_dis; // extra parameter in dissipative force from original mDPD
     double **A_att;
     double **B_rep;
     double **gamma;
