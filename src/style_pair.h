@@ -37,6 +37,7 @@
 #include "pair_lj_gromacs.h"
 #include "pair_lj_smooth.h"
 #include "pair_lj_smooth_linear.h"
+#include "pair_mdpd_meso.h"
 #include "pair_mie_cut.h"
 #include "pair_morse.h"
 #include "pair_soft.h"

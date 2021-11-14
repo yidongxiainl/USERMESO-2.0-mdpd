@@ -15,6 +15,7 @@
 #include "atom_vec_full.h"
 #include "atom_vec_hybrid.h"
 #include "atom_vec_line.h"
+#include "atom_vec_mdpd_atomic_meso.h"
 #include "atom_vec_molecular.h"
 #include "atom_vec_sph_atomic_meso.h"
 #include "atom_vec_sphere.h"
